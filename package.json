@@ -1,0 +1,22 @@
+{
+  "name": "streamzer.bot",
+  "version": "1.0.0",
+  "description": "Streamzer - Discord Bot",
+  "main": "index.js",
+  "scripts": {
+    "dev": "nodemon index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Samy MOKHTARI",
+  "license": "ISC",
+  "dependencies": {
+    "@prisma/client": "^5.16.2",
+    "discord.js": "^14.15.3",
+    "dotenv": "^16.4.5",
+    "log4js": "^6.9.1",
+    "prisma": "^5.16.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.4"
+  }
+}
