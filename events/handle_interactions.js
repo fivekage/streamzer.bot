@@ -3,12 +3,6 @@ const logger = require('../utils/logger');
 
 module.exports.handleInteraction = async (client, commands) => {
    client.on(Events.InteractionCreate, async (interaction) => {
-      if (interaction.isUserContextMenuCommand()) {
-         // Get the User's username from context menu
-         const { username } = interaction.targetUser;
-         console.log(username);
-      }
-
       if (!interaction.isChatInputCommand()) return;
 
       if (commands.some((command) => command.name == interaction.commandName)) {

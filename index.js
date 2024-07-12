@@ -1,11 +1,13 @@
-const { Client, REST, GatewayIntentBits } = require('discord.js');
+const { REST, Routes, ActivityType, Client, GatewayIntentBits } = require('discord.js');
 const logger = require('./utils/logger.js');
 require('dotenv').config();
-const { initializationClient } = require('./utils/initialization_client.js');
 const { loadAllCommands } = require('./utils/load_commands.js');
 const { handleInteraction } = require('./events/handle_interactions.js');
+const { setupChannels } = require('./utils/setup_channels.js');
 const { DISCORD_TOKEN } = process.env;
 const { CLIENT_ID } = process.env;
+const express = require('express')
+const { EXPRESS_PORT } = process.env;
 
 // Check if the token and client id are provided
 if (!DISCORD_TOKEN || !CLIENT_ID) {
@@ -13,6 +15,7 @@ if (!DISCORD_TOKEN || !CLIENT_ID) {
    process.exit(1);
 }
 
+// Initialize client
 const client = new Client({
    intents: [
       GatewayIntentBits.Guilds,
@@ -26,17 +29,40 @@ const client = new Client({
 const commands = loadAllCommands();
 // Initialize client
 const rest = new REST({ version: '10' }).setToken(DISCORD_TOKEN);
-initializationClient(client, rest, DISCORD_TOKEN, CLIENT_ID, commands).catch(logger.error).then(() => {
-   // Handle interactions
-   handleInteraction(client, commands).catch(logger.error);
-});
 
-process.on('exit', (code) => {
-   log4js.shutdown(() => {
-      process.exit(code);
-   });
-});
+// Refresh commands
+logger.info('Started refreshing application (/) commands.');
 
-process.on('SIGINT', () => {
-   process.exit();
-});
+const commandsBody = commands.map((command) => ({
+   name: command.name,
+   description: command.description,
+   options: command.options,
+   choices: command.choices,
+}));
+
+rest.put(Routes.applicationCommands(CLIENT_ID), { body: commandsBody })
+   .then(() => {
+      logger.info('Successfully reloaded application (/) commands.')
+
+      client.on('ready', () => {
+         logger.info(`Logged in as ${client.user.tag}!`);
+         client.user.setActivity('streamzer.fr', { type: ActivityType.Watching });
+         handleInteraction(client, commands)
+         setupChannels(client).then((res) => logger.info(res)).catch((err) => logger.error(err));
+      });
+
+      // Login to discord, then handle interactions
+      client.login(DISCORD_TOKEN).catch((err) => logger.error(err));
+   })
+   .catch(error => {
+      logger.fatal(error);
+      process.exit(1);
+   })
+
+
+// Express API
+const app = express()
+app.use(express.json())
+app.listen(EXPRESS_PORT)
+logger.info(`Express API listening on port ${EXPRESS_PORT}`)
+require('./api/post_new_registration')(client, app);
