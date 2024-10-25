@@ -2,7 +2,7 @@
 const logger = require('../../utils/logger.js');
 const vars = require('../_general/vars.js');
 const { ApplicationCommandOptionType, EmbedBuilder } = require('discord.js');
-const { prisma } = require('../../prisma.js');
+const { prisma } = require('../../client.js');
 module.exports.help = {
    name: 'status',
    description: 'Check the status of a user',
@@ -31,11 +31,7 @@ module.exports.run = async (_client, interaction) => {
    const dbUser = await prisma.user.findUnique({
       where: {
          id_discord_account: user.id
-      },
-      include: {
-         user_roles: true,
-
-      },
+      }
 
    })
    if (!dbUser) {
@@ -43,13 +39,12 @@ module.exports.run = async (_client, interaction) => {
          content: `User **${user.username}** not found in 5KAGE database`,
          ephemeral: true,
       });
-   }
-   // Build embed response
-   const userRoles = dbUser.user_roles
-   const userRolesString = []
-   for (const userRole of userRoles) {
-      userRolesString.push((await prisma.role.findUnique({ where: { id: userRole.role_id } })).name)
-   }
+   } const dbRole = (await prisma.role.findFirst({
+      where:
+      {
+         name: dbUser.role_id
+      }
+   }))
    const embed = new EmbedBuilder()
       .setTitle('User Status')
       .setDescription(`User <@${dbUser.id_discord_account}>  created at ${dbUser.created_at.toLocaleDateString()} ${dbUser.created_at.toLocaleTimeString()}`)
@@ -60,8 +55,8 @@ module.exports.run = async (_client, interaction) => {
             inline: true
          },
          {
-            name: 'Roles',
-            value: `**${userRolesString.length > 0 ? userRolesString.join(', ') : 'No roles'}**`,
+            name: 'Role',
+            value: `**${dbRole ?? 'No role found'}**`,
             inline: true
          }
 
