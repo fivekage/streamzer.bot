@@ -65,4 +65,3 @@ const app = express()
 app.use(express.json())
 app.listen(EXPRESS_PORT)
 logger.info(`Express API listening on port ${EXPRESS_PORT}`)
-require('./api/post_new_registration')(client, app);
