@@ -7,6 +7,7 @@ const { EmbedBuilder } = require('discord.js');
 const config = require('../../config.js');
 const { JellyfinAPIService } = require('../../services/jellyfin.service.js');
 const generator = require('generate-password');
+const passwordHash = require('password-hash');
 
 module.exports.help = {
    name: 'activate',
@@ -49,45 +50,78 @@ module.exports.run = async (_client, interaction) => {
    const jellyfinAPIService = new JellyfinAPIService()
    const jellyfinUsers = await jellyfinAPIService.fetchUsers()
    let jellyfinUser = jellyfinUsers.find(u => u.Name === dbUser.username)
-   if (!jellyfinUser)
-      try {
-         jellyfinUser = await jellyfinAPIService.registerUser(dbUser.username, dbUser.password)
-      } catch (error) {
-         return interaction.reply({
-            content: `Error creating account on Jellyfin for user ${user.username}`,
-            ephemeral: true,
-         });
-      }
 
-   // Set the role viewer to the user
-   if (dbUser.id_jellyfin_account) {
-      return interaction.reply({
-         content: `User already exists on jellyfin ${user.username}`,
-         ephemeral: true,
-      });
-   }
-
+   // Fetch Viewer role
    const roleValue = config.ROLES.find(r => r.name === 'Viewer').value
-   // Set Viewer role in db
    const dbRole = (await prisma.role.findFirst({
       where:
       {
          name: roleValue
       }
    }))
+
+   let passwordGenerated = null
+   // If the user does not exist on Jellyfin
+   if (!jellyfinUser) {
+      // Generate Password
+      passwordGenerated = generator.generate({
+         length: 10,
+         numbers: true,
+         symbols: true
+      });
+      try {
+         jellyfinUser = await jellyfinAPIService.registerUser(dbUser.username, passwordGenerated)
+      } catch (error) {
+         return interaction.reply({
+            content: `Error creating account on Jellyfin for user ${user.username}`,
+            ephemeral: true,
+         });
+      }
+   }
+   else { // If the user exists on Jellyfin
+      const ok = await jellyfinAPIService.setAccountActive(jellyfinUser.Id, true)
+      if (!ok) {
+         return interaction.reply({
+            content: `Error setting account on Jellyfin for user ${user.username}`,
+            ephemeral: true,
+         });
+      }
+      logger.info(`User ${dbUser.username} enabled on Jellyfin`)
+
+      if (!dbUser.id_jellyfin_account) {
+         // Update the jellyfin user id in our database if there is no id_jellyfin_account
+         await prisma.user.update({
+            where: { id: dbUser.id },
+            data: {
+               id_jellyfin_account: jellyfinUser.Id,
+               role_id: dbRole.id
+            }
+         })
+      }
+      const embed = new EmbedBuilder()
+         .setAuthor({ name: dbUser.username })
+         .setDescription(`Account enabled <@${dbUser.id_discord_account}>`)
+         .setColor(vars.primaryColor)
+         .setTimestamp()
+      return interaction.reply({
+         embeds: [embed],
+      });
+   }
+
+   // Update user in db
    await prisma.user.update({
       where: { id: dbUser.id },
-      data: { id_jellyfin_account: jellyfinUser.Id, role_id: dbRole.id }
+      data: {
+         id_jellyfin_account: jellyfinUser.Id,
+         role_id: dbRole.id,
+         password: passwordHash.generate(passwordGenerated)
+      }
    })
 
 
    // Send MP to user with his credentials
-   const passwordGenerated = generator.generate({
-      length: 10,
-      numbers: true
-   });
    const mpUser = new EmbedBuilder()
-      .setAuthor({ name: `<@${dbUser.id_discord_account}>` })
+      .setAuthor({ name: dbUser.username })
       .setDescription(`Your account has been activated, here is your authentication logs. You are free to keep it, or change it.`)
       .addFields(
          {
@@ -104,12 +138,12 @@ module.exports.run = async (_client, interaction) => {
       .setColor(vars.primaryColor)
       .setTimestamp()
 
-   user.send({ embeds: [embed] })
+   user.send({ embeds: [mpUser] })
 
    // Build embed response
    const embed = new EmbedBuilder()
-      .setAuthor({ name: `<@${dbUser.id_discord_account}>` })
-      .setDescription(`Your account has been activated, a MP will be sent to give him his credentials`)
+      .setAuthor({ name: dbUser.username })
+      .setDescription(`<@${dbUser.id_discord_account}> account has been activated, a MP will be sent to give him his credentials`)
       .addFields(
          {
             name: 'Role added',
