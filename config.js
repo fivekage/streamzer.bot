@@ -7,10 +7,14 @@ module.exports.WEBHOOK_NAME = 'streamzer.bot';
 module.exports.ROLES = [
    {
       name: 'Viewer',
-      value: 'Viewer'
+      value: 'VIEWER'
    },
    {
       name: 'Admin',
-      value: 'Admin'
+      value: 'ADMIN'
+   },
+   {
+      name: 'Disabled',
+      value: 'DISABLED'
    }
 ];

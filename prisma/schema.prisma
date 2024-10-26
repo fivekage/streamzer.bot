@@ -9,26 +9,31 @@ datasource db {
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
 model role {
-  id         Int          @id @default(autoincrement())
-  name       String?      @db.VarChar(45)
-  user_roles user_roles[]
+  id   Int     @id @default(autoincrement())
+  name String? @db.VarChar(45)
+  user user[]
 }
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
 model user {
-  id                 Int                @id @default(autoincrement())
-  id_discord_account String             @unique(map: "idDiscordAccount_UNIQUE") @db.VarChar(255)
-  email              String?            @unique(map: "email_UNIQUE") @db.VarChar(255)
-  username           String             @db.VarChar(255)
-  created_at         DateTime           @default(now()) @db.DateTime(0)
-  updated_at         DateTime           @default(now()) @db.DateTime(0)
-  user_connections   user_connections[]
-  user_roles         user_roles[]
+  id                  Int                @id @default(autoincrement())
+  role_id             Int?
+  id_discord_account  String?            @unique(map: "idDiscordAccount_UNIQUE") @db.VarChar(255)
+  id_jellyfin_account String?            @unique(map: "id_jellyfin_account_UNIQUE") @db.VarChar(255)
+  email               String?            @unique(map: "email_UNIQUE") @db.VarChar(255)
+  username            String             @db.VarChar(255)
+  password            String?            @db.VarChar(255)
+  created_at          DateTime           @default(now()) @db.DateTime(0)
+  updated_at          DateTime           @default(now()) @db.DateTime(0)
+  role                role?              @relation(fields: [role_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_user_role1")
+  user_connections    user_connections[]
+
+  @@index([role_id], map: "fk_user_role1_idx")
 }
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
 model user_connections {
-  id               Int      @id
+  id               Int      @id @default(autoincrement())
   user_id          Int
   connection_at    DateTime @default(now()) @db.DateTime(0)
   connection_ip    String   @db.VarChar(45)
@@ -40,15 +45,4 @@ model user_connections {
   user             user     @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_UserConnections_Users1")
 
   @@index([user_id], map: "fk_UserConnections_Users1_idx")
-}
-
-model user_roles {
-  user_id Int
-  role_id Int
-  role    role @relation(fields: [role_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_Users_has_Roles_Roles1")
-  user    user @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_Users_has_Roles_Users")
-
-  @@id([user_id, role_id])
-  @@index([role_id], map: "fk_Users_has_Roles_Roles1_idx")
-  @@index([user_id], map: "fk_Users_has_Roles_Users_idx")
 }

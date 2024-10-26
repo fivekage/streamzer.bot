@@ -11,7 +11,15 @@ CLIENT_ID=
 DATABASE_URL=
 EXPRESS_PORT=
 API_KEY=
+```
 
+
+## Prisma:
+
+un prisma commands to generate your schema from your database
+```bash
+npx prisma db pull
+npx prisma generate
 ```
 
 First, run the development server:
