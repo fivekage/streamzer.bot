@@ -1,3 +1,4 @@
+
 const logger = require('../../utils/logger.js');
 const vars = require('../_general/vars.js');
 const { ApplicationCommandOptionType, } = require('discord.js');
@@ -7,8 +8,8 @@ const config = require('../../config.js');
 const { JellyfinAPIService } = require('../../services/jellyfin.service.js');
 
 module.exports.help = {
-   name: 'deactivate',
-   description: 'Disable an account and remove access to Streamzer',
+   name: 'forgotpassword',
+   description: 'Initiale password reset process for a username',
    options: [
       {
          name: 'user',
@@ -23,12 +24,12 @@ module.exports.run = async (_client, interaction) => {
    const user = interaction.options.getUser('user');
    if (!user) {
       return interaction.reply({
-         content: 'You must specify a username to set',
+         content: 'You must specify a user and value to set',
          ephemeral: true,
       });
    }
 
-   logger.info(`Disable account for ${user.username} asked by ${interaction.user.username}`);
+   logger.info(`Initiate password reset for ${user.username} asked by ${interaction.user.username}`);
 
    // Get the status
    const dbUser = await prisma.user.findUnique({
@@ -43,42 +44,33 @@ module.exports.run = async (_client, interaction) => {
       });
    }
 
-   // Disable account on JellyFin
    const jellyfinAPIService = new JellyfinAPIService()
-   const ok = await jellyfinAPIService.setAccountActive(dbUser.id_jellyfin_account, false)
-   if (ok) {
-      logger.info(`User ${dbUser.username} disabled on Jellyfin`)
-
-      // Remove the role
-      const roleValue = config.ROLES.find(r => r.name === 'Disabled').value
-      // Set Disabled role in db
-      const dbRole = (await prisma.role.findFirst({
-         where:
-         {
-            name: roleValue
-         }
-      }))
-      await prisma.user.update({
-         where: { id: dbUser.id },
-         data: { role_id: dbRole.id }
-      })
-   } else {
-      logger.error(`User ${dbUser.username} cannot be disabled on Jellyfin : ${JSON.stringify(response.errors)}`)
+   let response = null
+   try {
+      response = await jellyfinAPIService.initiateForgotPasswordProcess(dbUser.username)
+   } catch (error) {
       return interaction.reply({
-         content: `User **${user.username}** cannot be disabled on Jellyfin : ${JSON.stringify(response.errors)}`,
+         content: error.toString(),
          ephemeral: true,
-      })
+      });
    }
+
 
    // Build embed response
    const embed = new EmbedBuilder()
       .setAuthor({ name: dbUser.username })
-      .setDescription(`Account disabled <@${dbUser.id_discord_account}>`)
+      .setDescription(`Forgot Password Process initiated for <@${dbUser.id_discord_account}> `)
+      .addFields(
+         {
+            name: 'PIN Expiration Date',
+            value: response.PinExpirationDate,
+            inline: true
+         }
+      )
       .setColor(vars.primaryColor)
       .setTimestamp()
 
    // Send response
    interaction.reply({ embeds: [embed] });
-   logger.info(`Account disable for ${user.username} asked by ${interaction.user.username}`);
 
 };

@@ -16,20 +16,27 @@ module.exports.help = {
          description: 'The user target',
          type: ApplicationCommandOptionType.User,
          required: true,
+      },
+      {
+         name: 'value',
+         description: 'Set as admin or not',
+         type: ApplicationCommandOptionType.Boolean,
+         required: true,
       }
    ],
 };
 
 module.exports.run = async (_client, interaction) => {
    const user = interaction.options.getUser('user');
-   if (!user) {
+   const setAdminValue = interaction.options.getBoolean('value');
+   if (!user || setAdminValue == null) {
       return interaction.reply({
-         content: 'You must specify a username to set',
+         content: 'You must specify a user and value to set',
          ephemeral: true,
       });
    }
 
-   logger.info(`Activate for ${user.username} asked by ${interaction.user.username}`);
+   logger.info(`SetAdmin -> ${setAdminValue} for ${user.username} asked by ${interaction.user.username}`);
 
    // Get the status
    const dbUser = await prisma.user.findUnique({
@@ -44,7 +51,6 @@ module.exports.run = async (_client, interaction) => {
       });
    }
 
-   // Create an account on JellyFin
    const jellyfinAPIService = new JellyfinAPIService()
    const jellyfinUsers = await jellyfinAPIService.fetchUsers()
    let jellyfinUser = jellyfinUsers.find(u => u.Name === dbUser.username)
@@ -57,16 +63,16 @@ module.exports.run = async (_client, interaction) => {
 
    // Add the role to the user on Jellyfin
    try {
-      await jellyfinAPIService.setUserAsAdmin(dbUser.id_jellyfin_account, true)
+      await jellyfinAPIService.setUserAsAdmin(dbUser.id_jellyfin_account, setAdminValue)
    } catch (ex) {
       logger.error(`Error setting ${dbUser.username} as admin ${ex}`)
       return interaction.reply({
-         content: `User account not found for ${user.username}`,
+         content: `Error seting admin for ${user.username} : ${ex}`,
          ephemeral: false,
       });
    }
 
-   const roleValue = config.ROLES.find(r => r.name === 'Admin').value
+   const roleValue = config.ROLES.find(r => r.name === (setAdminValue ? 'Admin' : 'Viewer')).value
    const dbRole = (await prisma.role.findFirst({
       where:
       {
@@ -82,11 +88,11 @@ module.exports.run = async (_client, interaction) => {
 
    // Build embed response
    const embed = new EmbedBuilder()
-      .setAuthor({ name: `<@${dbUser.id_discord_account}>` })
-      .setDescription(`is now Administrator`)
+      .setAuthor({ name: dbUser.username })
+      .setDescription(`<@${dbUser.id_discord_account}> is ${setAdminValue ? 'now' : 'not longer'} Administrator`)
       .addFields(
          {
-            name: 'Role added',
+            name: 'Role set',
             value: roleValue,
             inline: true
          }

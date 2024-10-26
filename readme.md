@@ -5,21 +5,31 @@
 ### Environment file
 You will need to create a .env file in the root directory and add the following values:
 ```bash
-NODE_ENV=
-DISCORD_TOKEN=
-CLIENT_ID=
-DATABASE_URL=
-EXPRESS_PORT=
-API_KEY=
+NODE_ENV=''
+API_KEY_JELLYFIN=''
+
+DISCORD_TOKEN=''
+CLIENT_ID=''
+CLIENT_SECRET=''
+
+API_KEY_JELLYFIN=''
+REDIRECT_URI=''
+DATABASE_URL=''
+EXPRESS_PORT=''
 ```
 
 
 ## Prisma:
 
-un prisma commands to generate your schema from your database
+Run prisma commands to generate your schema from your database
 ```bash
 npx prisma db pull
 npx prisma generate
+```
+
+Or create your database from the existing schema :
+```bash
+npx prisma migrate dev
 ```
 
 First, run the development server:

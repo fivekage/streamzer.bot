@@ -42,12 +42,12 @@ module.exports.run = async (_client, interaction) => {
    } const dbRole = (await prisma.role.findFirst({
       where:
       {
-         name: dbUser.role_id
+         id: dbUser.role_id
       }
    }))
    const embed = new EmbedBuilder()
       .setTitle('User Status')
-      .setDescription(`User <@${dbUser.id_discord_account}>  created at ${dbUser.created_at.toLocaleDateString()} ${dbUser.created_at.toLocaleTimeString()}`)
+      .setDescription(`Account <@${dbUser.id_discord_account}>  created at ${dbUser.created_at.toUTCString()}`)
       .addFields(
          {
             name: 'Last update',
@@ -56,7 +56,7 @@ module.exports.run = async (_client, interaction) => {
          },
          {
             name: 'Role',
-            value: `**${dbRole ?? 'No role found'}**`,
+            value: `**${dbRole?.name ?? 'No role found'}**`,
             inline: true
          }
 
