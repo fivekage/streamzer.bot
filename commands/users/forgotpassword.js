@@ -63,7 +63,7 @@ module.exports.run = async (_client, interaction) => {
       .addFields(
          {
             name: 'PIN Expiration Date',
-            value: response.PinExpirationDate,
+            value: JSON.stringify(response),
             inline: true
          }
       )

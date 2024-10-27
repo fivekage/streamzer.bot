@@ -88,16 +88,15 @@ module.exports.run = async (_client, interaction) => {
       }
       logger.info(`User ${dbUser.username} enabled on Jellyfin`)
 
-      if (!dbUser.id_jellyfin_account) {
-         // Update the jellyfin user id in our database if there is no id_jellyfin_account
-         await prisma.user.update({
-            where: { id: dbUser.id },
-            data: {
-               id_jellyfin_account: jellyfinUser.Id,
-               role_id: dbRole.id
-            }
-         })
-      }
+      // Update the jellyfin user id in our database if there is no id_jellyfin_account
+      await prisma.user.update({
+         where: { id: dbUser.id },
+         data: {
+            id_jellyfin_account: jellyfinUser.Id,
+            role_id: dbRole.id
+         }
+      })
+
       const embed = new EmbedBuilder()
          .setAuthor({ name: dbUser.username })
          .setDescription(`Account enabled <@${dbUser.id_discord_account}>`)
