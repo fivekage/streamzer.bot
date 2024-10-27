@@ -39,12 +39,16 @@ module.exports.run = async (_client, interaction) => {
          content: `User **${user.username}** not found in 5KAGE database`,
          ephemeral: true,
       });
-   } const dbRole = (await prisma.role.findFirst({
-      where:
-      {
-         id: dbUser.role_id
-      }
-   }))
+   }
+
+   let dbRole = null
+   if (dbUser.role_id != null)
+      dbRole = (await prisma.role.findFirst({
+         where:
+         {
+            id: dbUser.role_id
+         }
+      }))
    const embed = new EmbedBuilder()
       .setTitle('User Status')
       .setDescription(`Account <@${dbUser.id_discord_account}>  created at ${dbUser.created_at.toUTCString()}`)
