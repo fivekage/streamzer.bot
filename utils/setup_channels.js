@@ -9,6 +9,7 @@ const CHANNEL_NAME = config.CHANNEL_NAME;
 const CATEGORY_MANAGEMENT_NAME = config.CATEGORY_MANAGEMENT_NAME;
 const ADMIN_ROLE_ID = config.ADMIN_ROLE_ID;
 const WEBHOOK_NAME = config.WEBHOOK_NAME;
+const ENV_NAME_VAR_DISCORD_WEBHOOK = 'DISCORD_WEBHOOK_URL';
 
 module.exports.setupChannels = async (client) => {
 
@@ -61,10 +62,14 @@ module.exports.setupChannels = async (client) => {
          avatar: client.user.displayAvatarURL(),
          reason: 'To send notifications of new users registered'
       })
-         .then(wh => logger.info(`Created webhook ${wh.url}`))
+         .then(wh => {
+            logger.info(`Created webhook ${wh.url}`)
+            process.env[ENV_NAME_VAR_DISCORD_WEBHOOK] = wh.url;
+         })
          .catch((err) => logger.error(err));
    } else {
       logger.debug(`Webhook already exists with url <${webhook.url}>`)
+      process.env[ENV_NAME_VAR_DISCORD_WEBHOOK] = webhook.url;
    }
    return "Channels, Category and Webhook setup successfully"
 }

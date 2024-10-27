@@ -1,12 +1,12 @@
 
-const { DiscordAPIService } = require('../services/discord.service')
-const { StreamzerBotService } = require('../services/streamzerbot.service')
+const { DiscordAPIService } = require('../../services/discord.service.js')
+const { StreamzerBotService } = require('../../services/streamzerbot.service.js')
 
 const express = require('express');
 const router = express.Router();
-const logger = require('../utils/logger');
-const config = require('../config.js');
-const { prisma } = require('../client.js');
+const logger = require('../../utils/logger.js');
+const config = require('../../config.js');
+const { prisma } = require('../../client.js');
 
 const discordService = new DiscordAPIService()
 const streamzerBotService = new StreamzerBotService()
@@ -50,9 +50,9 @@ router.get('/', async (req, res) => {
          if (response.status == 204) {
             await prisma.user.create({
                data: {
-                  username: username,
-                  email: email,
-                  id_discord_account: discordId
+                  username: discordUser.username,
+                  email: discordUser.email,
+                  id_discord_account: discordUser.id
                }
             })
             logger.info(`New user registered: ${discordUser.username}`)
@@ -94,7 +94,7 @@ router.get('/', async (req, res) => {
       }
    } catch (err) {
       logger.error(err)
-      return res.status(err.status).json({
+      return res.status(500).json({
          "status": "error",
          "message": err.toString()
       })
