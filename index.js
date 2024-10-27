@@ -62,6 +62,7 @@ rest.put(Routes.applicationCommands(CLIENT_ID), { body: commandsBody })
 
 // Express API
 const app = express()
-app.use(express.json())
-app.listen(EXPRESS_PORT)
+const authCallback = require('./routes/auth-callback')
+app.listen(EXPRESS_PORT ?? new Error('EXPRESS_PORT is not defined'))
 logger.info(`Express API listening on port ${EXPRESS_PORT}`)
+app.use('/auth-callback', authCallback)

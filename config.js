@@ -3,7 +3,7 @@ module.exports.CATEGORY_MANAGEMENT_NAME = 'management';
 module.exports.CHANNEL_NAME = 'users';
 module.exports.STREAMZER_GUILD_ID = '1255176867380461599';
 module.exports.WEBHOOK_NAME = 'streamzer.bot';
-
+module.exports.STREAMZER_DISCORD_LINK = 'https://discord.gg/2fsHHZnJe6';
 module.exports.ROLES = [
    {
       name: 'Viewer',
