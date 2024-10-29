@@ -3,25 +3,22 @@ name: Deploy to Production
 on:
   workflow_run:
     workflows: ["Deploy Docker Package"]
-    branches: [main]
-    types: 
-      - completed
+    types: [completed]
+
+defaults:
+  run:
+    shell: bash
+
 env:
   WORKDIR: '/home/hb/media stack'
   env: production
-  REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
+
+permissions: write-all
 
 jobs:
-  build:
+  deploy_production:
     runs-on: ubuntu-latest
-    name: Deploy to On Premise Server
-    permissions:
-        contents: 'read'
-        id-token: 'write'
-    defaults:
-        run:
-          shell: bash
+    name: Deploy to Production
     steps:
         - name: Set environments variable in a file .env
           uses: appleboy/ssh-action@v1.0.0
