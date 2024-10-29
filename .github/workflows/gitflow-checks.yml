@@ -46,14 +46,14 @@ jobs:
 
       - name: Check commit message
         run: |
-          regex="^\[#([0-9]+)\]\s+(.*?)$"
+          regex="^\[(fix|close|resolve) #([0-9]+)\]\s+(.*?)$"
           git fetch --all
           commit_msg=$(git log -n 1 origin/${{github.event.pull_request.head.ref}} --oneline --pretty=format:%s)
           if [[ $commit_msg =~ $regex ]]; then
             echo "✅ Commit Message is correct : ${commit_msg}"
           else
             echo "❌ The commit message does not respect the regex rule."
-            echo "It should look like: [#123] Commit message"
+            echo "It should look like: [fix|close|resolve #123] Commit message"
             echo "Your commit message is: ${commit_msg}"
             exit 1
           fi
