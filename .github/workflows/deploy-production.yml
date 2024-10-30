@@ -7,10 +7,11 @@ on:
     types: 
       - completed
 env:
-  WORKDIR: '/home/hb/media stack'
+  WORKDIR: '/home/hb/media_stack'
   env: production
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
+  env_file: .env.streamzerbot
 
 jobs:
   build:
@@ -23,7 +24,7 @@ jobs:
         run:
           shell: bash
     steps:
-        - name: Set environments variable in a file .env
+        - name: Set environments variable in a file ${{ env.env_file }}
           uses: appleboy/ssh-action@v1.0.0
           with:
             host: ${{ vars.SSH_HOST }}
@@ -33,14 +34,14 @@ jobs:
             script: |
               mkdir -p ${{ env.WORKDIR }}
               cd ${{ env.WORKDIR }}
-              [ -e .env ] && rm .env
-              echo "NODE_ENV=${{ env.env }}" >> .env
-              echo "DISCORD_TOKEN=${{ secrets.DISCORD_TOKEN }}" >> .env
-              echo "CLIENT_ID=${{ secrets.CLIENT_ID }}" >> .env
-              echo "CLIENT_SECRET=${{ secrets.CLIENT_SECRET }}" >> .env
-              echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" >> .env
-              echo "REDIRECT_URI=${{ vars.REDIRECT_URI }}" >> .env
-              echo "DISCORD_WEBHOOK_URL=${{ vars.DISCORD_WEBHOOK_URL }}" >> .env
+              [ -e ${{ env.env_file }} ] && rm ${{ env.env_file }}
+              echo "NODE_ENV=${{ env.env }}" >> ${{ env.env_file }}
+              echo "DISCORD_TOKEN=${{ secrets.DISCORD_TOKEN }}" >> ${{ env.env_file }}
+              echo "CLIENT_ID=${{ secrets.CLIENT_ID }}" >> ${{ env.env_file }}
+              echo "CLIENT_SECRET=${{ secrets.CLIENT_SECRET }}" >> ${{ env.env_file }}
+              echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" >> ${{ env.env_file }}
+              echo "REDIRECT_URI=${{ vars.REDIRECT_URI }}" >> ${{ env.env_file }}
+              echo "DISCORD_WEBHOOK_URL=${{ vars.DISCORD_WEBHOOK_URL }}" >> ${{ env.env_file }}
 
         - name: 'Trigger Deploying Production of streamzer.infra'
           env:
