@@ -37,6 +37,21 @@ module.exports.run = async (_client, message) => {
       });
    }
 
+   // Remove 'Valid' Role on Discord
+   const discordRoleValid = (await message.guild.roles.fetch()).find(role => role.name === config.ROLE_VALID_NAME);
+   if (!discordRoleValid) {
+      return message.reply({
+         content: `Role **${config.ROLE_VALID_NAME}** not found on Discord`,
+         ephemeral: true,
+      });
+   }
+   if ((await message.guild.members.fetch(user.id)).roles.cache.has(discordRoleValid.id))
+      message.guild.members.removeRole({
+         reason: "Account disabled on Streamzer",
+         role: discordRoleValid.id,
+         user: message.guild.members.cache.get(user.id)
+      })
+
    // Disable account on JellyFin
    const jellyfinAPIService = new JellyfinAPIService()
    const ok = await jellyfinAPIService.setAccountActive(dbUser.id_jellyfin_account, false)

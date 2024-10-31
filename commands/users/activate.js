@@ -54,6 +54,21 @@ module.exports.run = async (_client, message) => {
       }
    }))
 
+   // Add 'Valid' Role on Discord
+   const discordRoleValid = (await message.guild.roles.fetch()).find(role => role.name === config.ROLE_VALID_NAME);
+   if (!discordRoleValid) {
+      return message.reply({
+         content: `Role **${config.ROLE_VALID_NAME}** not found on Discord`,
+         ephemeral: true,
+      });
+   }
+   if (!(await message.guild.members.fetch(user.id)).roles.cache.has(discordRoleValid.id))
+      message.guild.members.addRole({
+         reason: "Account validated on Streamzer",
+         role: discordRoleValid.id,
+         user: message.guild.members.cache.get(user.id)
+      })
+
    let passwordGenerated = null
    // If the user does not exist on Jellyfin
    if (!jellyfinUser) {
