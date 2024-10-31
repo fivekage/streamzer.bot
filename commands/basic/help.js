@@ -7,7 +7,7 @@ module.exports.help = {
    description: 'Returns a list of available commands',
 };
 
-module.exports.run = (_client, interaction) => {
+module.exports.run = (_client, message) => {
    // Load all commands and get their name and description
    const listOfCommands = loadAllCommands().sort((a, b) => {
       if (a.name < b.name) return -1;
@@ -21,10 +21,10 @@ module.exports.run = (_client, interaction) => {
    const helpEmbed = new EmbedBuilder()
       .setColor(vars.primaryColor)
       .setDescription(listOfCommands)
-      .setAuthor({ name: `For you ${interaction.user.username}` })
+      .setAuthor({ name: `For you ${message.user.username}` })
       .setTitle('Commands you can use ! 📜')
       .setFooter({ text: 'Need help? Contact samouik', iconURL: vars.reecoom });
 
    // Send the embed
-   return interaction.reply({ embeds: [helpEmbed] });
+   return message.reply({ embeds: [helpEmbed] });
 };

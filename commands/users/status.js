@@ -16,16 +16,10 @@ module.exports.help = {
    ],
 };
 
-module.exports.run = async (_client, interaction) => {
-   const user = interaction.options.getUser('username');
-   if (!user) {
-      return interaction.reply({
-         content: 'You must specify a username to accept',
-         ephemeral: true,
-      });
-   }
+module.exports.run = async (_client, message) => {
+   const user = message.options.getUser('username');
 
-   logger.info(`Checking status of ${user.username} asked by ${interaction.user.username}`);
+   logger.info(`Checking status of ${user.username} asked by ${message.user.username}`);
 
    // Get the status
    const dbUser = await prisma.user.findUnique({
@@ -35,9 +29,13 @@ module.exports.run = async (_client, interaction) => {
 
    })
    if (!dbUser) {
-      return interaction.reply({
-         content: `User **${user.username}** not found in 5KAGE database`,
-         ephemeral: true,
+      const embed = new EmbedBuilder()
+         .setTitle('User Status')
+         .setDescription(`User **${user.username}** not found in 5KAGE Streamzer database`)
+         .setColor(vars.primaryColor)
+         .setTimestamp()
+      return message.reply({
+         embeds: [embed]
       });
    }
 
@@ -69,6 +67,6 @@ module.exports.run = async (_client, interaction) => {
       .setTimestamp()
 
    // Send response
-   interaction.reply({ embeds: [embed] });
+   message.reply({ embeds: [embed] });
 
 };

@@ -26,17 +26,19 @@ module.exports.help = {
    ],
 };
 
-module.exports.run = async (_client, interaction) => {
-   const user = interaction.options.getUser('user');
-   const setAdminValue = interaction.options.getBoolean('value');
-   if (!user || setAdminValue == null) {
-      return interaction.reply({
-         content: 'You must specify a user and value to set',
+module.exports.run = async (_client, message) => {
+   const user = message.options.getUser('user');
+   const setAdminValue = message.options.getBoolean('value');
+
+   // Check if the user run command from 5KAGE server
+   if (!message.inGuild()) { // The bot is present in only one server -> No need to check if it's the right server
+      return message.reply({
+         content: 'You can only run this command from 5KAGE server',
          ephemeral: true,
       });
    }
 
-   logger.info(`SetAdmin -> ${setAdminValue} for ${user.username} asked by ${interaction.user.username}`);
+   logger.info(`SetAdmin -> ${setAdminValue} for ${user.username} asked by ${message.user.username}`);
 
    // Get the status
    const dbUser = await prisma.user.findUnique({
@@ -45,8 +47,8 @@ module.exports.run = async (_client, interaction) => {
       }
    })
    if (!dbUser) {
-      return interaction.reply({
-         content: `User **${user.username}** not found in 5KAGE database`,
+      return message.reply({
+         content: `User **${user.username}** not found in 5KAGE Streamzer database`,
          ephemeral: true,
       });
    }
@@ -55,7 +57,7 @@ module.exports.run = async (_client, interaction) => {
    const jellyfinUsers = await jellyfinAPIService.fetchUsers()
    let jellyfinUser = jellyfinUsers.find(u => u.Name === dbUser.username)
    if (!jellyfinUser)
-      return interaction.reply({
+      return message.reply({
          content: `User account not found for ${user.username}`,
          ephemeral: false,
       });
@@ -66,7 +68,7 @@ module.exports.run = async (_client, interaction) => {
       await jellyfinAPIService.setUserAsAdmin(dbUser.id_jellyfin_account, setAdminValue)
    } catch (ex) {
       logger.error(`Error setting ${dbUser.username} as admin ${ex}`)
-      return interaction.reply({
+      return message.reply({
          content: `Error seting admin for ${user.username} : ${ex}`,
          ephemeral: false,
       });
@@ -101,6 +103,6 @@ module.exports.run = async (_client, interaction) => {
       .setTimestamp()
 
    // Send response
-   interaction.reply({ embeds: [embed] });
+   message.reply({ embeds: [embed] });
 
 };
