@@ -20,16 +20,10 @@ module.exports.help = {
    ],
 };
 
-module.exports.run = async (_client, interaction) => {
-   const user = interaction.options.getUser('user');
-   if (!user) {
-      return interaction.reply({
-         content: 'You must specify a user and value to set',
-         ephemeral: true,
-      });
-   }
+module.exports.run = async (_client, message) => {
+   const user = message.options.getUser('user');
 
-   logger.info(`Initiate password reset for ${user.username} asked by ${interaction.user.username}`);
+   logger.info(`Initiate password reset for ${user.username} asked by ${message.user.username}`);
 
    // Get the status
    const dbUser = await prisma.user.findUnique({
@@ -38,8 +32,8 @@ module.exports.run = async (_client, interaction) => {
       }
    })
    if (!dbUser) {
-      return interaction.reply({
-         content: `User **${user.username}** not found in 5KAGE database`,
+      return message.reply({
+         content: `User **${user.username}** not found in 5KAGE Streamzer database`,
          ephemeral: true,
       });
    }
@@ -49,7 +43,7 @@ module.exports.run = async (_client, interaction) => {
    try {
       response = await jellyfinAPIService.initiateForgotPasswordProcess(dbUser.username)
    } catch (error) {
-      return interaction.reply({
+      return message.reply({
          content: error.toString(),
          ephemeral: true,
       });
@@ -71,6 +65,6 @@ module.exports.run = async (_client, interaction) => {
       .setTimestamp()
 
    // Send response
-   interaction.reply({ embeds: [embed] });
+   message.reply({ embeds: [embed] });
 
 };

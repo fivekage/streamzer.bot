@@ -3,23 +3,26 @@ name: Deploy to Production
 on:
   workflow_run:
     workflows: ["Deploy Docker Package"]
-    types: [completed]
-
-defaults:
-  run:
-    shell: bash
-
+    branches: [main]
+    types: 
+      - completed
 env:
   WORKDIR: '/home/hb/media_stack'
   env: production
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
   env_file: .env.streamzerbot
 
-permissions: write-all
-
 jobs:
-  deploy_production:
+  build:
     runs-on: ubuntu-latest
-    name: Deploy to Production
+    name: Deploy to On Premise Server
+    permissions:
+        contents: 'read'
+        id-token: 'write'
+    defaults:
+        run:
+          shell: bash
     steps:
         - name: Set environments variable in a file ${{ env.env_file }}
           uses: appleboy/ssh-action@v1.0.0
@@ -29,8 +32,8 @@ jobs:
             key: ${{ secrets.SSH_PRIVATE_KEY }}
             port: ${{ vars.SSH_PORT }}
             script: |
-              mkdir -p '${{ env.WORKDIR }}'
-              cd '${{ env.WORKDIR }}'
+              mkdir -p ${{ env.WORKDIR }}
+              cd ${{ env.WORKDIR }}
               [ -e ${{ env.env_file }} ] && rm ${{ env.env_file }}
               echo "NODE_ENV=${{ env.env }}" >> ${{ env.env_file }}
               echo "DISCORD_TOKEN=${{ secrets.DISCORD_TOKEN }}" >> ${{ env.env_file }}
@@ -48,6 +51,6 @@ jobs:
               -H "Accept: application/vnd.github+json" \
               -H "Authorization: Bearer $REPO_TRIGGER_TOKEN" \
               -H "X-GitHub-Api-Version: 2022-11-28" \
-              https://api.github.com/repos/fivekage/streamzer.infra/actions/workflows/update_docker_compose.yml/dispatches \
+              https://api.github.com/repos/fivekage/streamzer.infra/actions/workflows/deploy-resources.yml/dispatches \
               -d '{"ref":"${{ github.event.inputs.ref }}"}'
 
