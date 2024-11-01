@@ -44,6 +44,10 @@ pnpm dev
 bun dev
 ```
 
+## Ask a feature or report a bug
+
+If you have encountered a problem or you want to ask a new feature on streamzer.bot you can open an issue on github describing your need. We will analyze the ticket, then develop the task.
+
 ## Contact
 
 For questions or feedback, open an issue on this projet or contact the administrators on the [Streamzer Discord server](https://discord.gg/2fsHHZnJe6).
