@@ -43,6 +43,7 @@ jobs:
               echo "REDIRECT_URI=${{ vars.REDIRECT_URI }}" >> ${{ env.env_file }}
               echo "DISCORD_WEBHOOK_URL=${{ vars.DISCORD_WEBHOOK_URL }}" >> ${{ env.env_file }}
               echo "EXPRESS_PORT=${{ vars.EXPRESS_PORT }}" >> ${{ env.env_file }}
+              echo "API_KEY_JELLYFIN=${{ secrets.API_KEY_JELLYFIN }}" >> ${{ env.env_file }}
 
         - name: 'Trigger Deploying Production of streamzer.infra'
           env:
