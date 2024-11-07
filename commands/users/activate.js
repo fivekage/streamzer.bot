@@ -40,7 +40,7 @@ module.exports.run = async (_client, message) => {
       });
    }
 
-   // Create an account on JellyFin
+   // Fetch Users Jellyfin
    const jellyfinAPIService = new JellyfinAPIService()
    const jellyfinUsers = await jellyfinAPIService.fetchUsers()
    let jellyfinUser = jellyfinUsers.find(u => u.Name === dbUser.username)

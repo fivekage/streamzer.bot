@@ -4,7 +4,6 @@ const vars = require('../_general/vars.js');
 const { ApplicationCommandOptionType, } = require('discord.js');
 const { prisma } = require('../../client.js');
 const { EmbedBuilder } = require('discord.js');
-const config = require('../../config.js');
 const { JellyfinAPIService } = require('../../services/jellyfin.service.js');
 
 module.exports.help = {

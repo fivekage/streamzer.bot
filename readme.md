@@ -44,9 +44,33 @@ pnpm dev
 bun dev
 ```
 
-## Ask a feature or report a bug
+## Contributing Guidelines
+Thank you for contributing! Please follow these steps to ensure a smooth workflow:
 
-If you have encountered a problem or you want to ask a new feature on streamzer.bot you can open an issue on github describing your need. We will analyze the ticket, then develop the task.
+### 1. Opening an Issue
+- **Create an issue** to describe bugs, features, or improvements.
+- **Provide clear details** and **tag** appropriately (e.g., `bug`, `enhancement`).
+
+### 2. Creating a Pull Request
+To ensure your PR passes our CI checks:
+
+#### Branch Naming
+- Name branches like `issue-123` or `ISSUE-123`, where `123` is the issue number.
+
+#### Commit Requirements
+- **Squash commits** so only one new commit exists relative to `dev`.
+- Use this format for commit messages: `[fix|close|resolve #123] Message`. For example: `[fix #123] Correct typo`.
+
+### PR Review Process
+1. **Open a PR** targeting the `dev` branch.
+2. CI will check for:
+   - Correct branch name.
+   - Single, squashed commit.
+   - Proper commit message format.
+3. **Resolve CI issues** if they arise, then request review.
+
+Following these steps helps keep our project organized and consistent. Thanks for your help!
+
 
 ## Contact
 
