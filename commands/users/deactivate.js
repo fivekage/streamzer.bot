@@ -21,7 +21,6 @@ module.exports.help = {
 
 module.exports.run = async (_client, message) => {
    const user = message.options.getUser('user');
-
    logger.info(`Disable account for ${user.username} asked by ${message.user.username}`);
 
    // Get the status
@@ -31,7 +30,7 @@ module.exports.run = async (_client, message) => {
       }
    })
    if (!dbUser) {
-      return message.reply({
+      return await message.editReply({
          content: `User **${user.username}** not found in 5KAGE Streamzer database`,
          ephemeral: true,
       });
@@ -40,7 +39,7 @@ module.exports.run = async (_client, message) => {
    // Remove 'Valid' Role on Discord
    const discordRoleValid = (await message.guild.roles.fetch()).find(role => role.name === config.ROLE_VALID_NAME);
    if (!discordRoleValid) {
-      return message.reply({
+      return await message.editReply({
          content: `Role **${config.ROLE_VALID_NAME}** not found on Discord`,
          ephemeral: true,
       });
@@ -73,7 +72,7 @@ module.exports.run = async (_client, message) => {
       })
    } else {
       logger.error(`User ${dbUser.username} cannot be disabled on Jellyfin : ${JSON.stringify(response.errors)}`)
-      return message.reply({
+      return await message.editReply({
          content: `User **${user.username}** cannot be disabled on Jellyfin : ${JSON.stringify(response.errors)}`,
          ephemeral: true,
       })
@@ -87,7 +86,7 @@ module.exports.run = async (_client, message) => {
       .setTimestamp()
 
    // Send response
-   message.reply({ embeds: [embed] });
+   await message.editReply({ embeds: [embed] });
    logger.info(`Account disable for ${user.username} asked by ${message.user.username}`);
 
 };

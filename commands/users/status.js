@@ -18,7 +18,6 @@ module.exports.help = {
 
 module.exports.run = async (_client, message) => {
    const user = message.options.getUser('username');
-
    logger.info(`Checking status of ${user.username} asked by ${message.user.username}`);
 
    // Get the status
@@ -34,7 +33,7 @@ module.exports.run = async (_client, message) => {
          .setDescription(`User **${user.username}** not found in 5KAGE Streamzer database`)
          .setColor(vars.primaryColor)
          .setTimestamp()
-      return message.reply({
+      return await message.editReply({
          embeds: [embed]
       });
    }
@@ -67,6 +66,6 @@ module.exports.run = async (_client, message) => {
       .setTimestamp()
 
    // Send response
-   message.reply({ embeds: [embed] });
+   await message.editReply({ embeds: [embed] });
 
 };

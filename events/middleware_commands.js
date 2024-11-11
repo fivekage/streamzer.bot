@@ -1,7 +1,10 @@
-module.exports.commandCanBeProcessed = (message) => {
+module.exports.commandCanBeProcessed = async (message) => {
+   // Defer the reply
+   await message.deferReply();
+
    // Check if the user run command from Streamzer server
    if (!message.inGuild()) { // The bot is present in only one server -> No need to check if it's the right server
-      message.reply({
+      await message.editReply({
          content: 'You can only run this command from Streamzer Discord server',
          ephemeral: true,
       });
@@ -9,7 +12,7 @@ module.exports.commandCanBeProcessed = (message) => {
    }
 
    if (!message.member.roles.cache.some(role => role.name === 'Admin')) { // The user is not an admin
-      message.reply({
+      await message.editReply({
          content: 'You must be an admin to use this command',
          ephemeral: true,
       });

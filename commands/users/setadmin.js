@@ -32,7 +32,7 @@ module.exports.run = async (_client, message) => {
 
    // Check if the user run command from 5KAGE server
    if (!message.inGuild()) { // The bot is present in only one server -> No need to check if it's the right server
-      return message.reply({
+      return await message.editReply({
          content: 'You can only run this command from 5KAGE server',
          ephemeral: true,
       });
@@ -47,7 +47,7 @@ module.exports.run = async (_client, message) => {
       }
    })
    if (!dbUser) {
-      return message.reply({
+      return await message.editReply({
          content: `User **${user.username}** not found in 5KAGE Streamzer database`,
          ephemeral: true,
       });
@@ -57,7 +57,7 @@ module.exports.run = async (_client, message) => {
    const jellyfinUsers = await jellyfinAPIService.fetchUsers()
    let jellyfinUser = jellyfinUsers.find(u => u.Name === dbUser.username)
    if (!jellyfinUser)
-      return message.reply({
+      return await message.editReply({
          content: `User account not found for ${user.username}`,
          ephemeral: false,
       });
@@ -68,7 +68,7 @@ module.exports.run = async (_client, message) => {
       await jellyfinAPIService.setUserAsAdmin(dbUser.id_jellyfin_account, setAdminValue)
    } catch (ex) {
       logger.error(`Error setting ${dbUser.username} as admin ${ex}`)
-      return message.reply({
+      return await message.editReply({
          content: `Error seting admin for ${user.username} : ${ex}`,
          ephemeral: false,
       });
@@ -103,6 +103,6 @@ module.exports.run = async (_client, message) => {
       .setTimestamp()
 
    // Send response
-   message.reply({ embeds: [embed] });
+   await message.editReply({ embeds: [embed] });
 
 };

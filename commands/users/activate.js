@@ -24,7 +24,6 @@ module.exports.help = {
 
 module.exports.run = async (_client, message) => {
    const user = message.options.getUser('user');
-
    logger.info(`Activate for ${user.username} asked by ${message.user.username}`);
 
    // Get the status
@@ -34,7 +33,7 @@ module.exports.run = async (_client, message) => {
       }
    })
    if (!dbUser) {
-      return message.reply({
+      return await message.editReply({
          content: `User **${user.username}** not found in 5KAGE Streamzer database`,
          ephemeral: true,
       });
@@ -57,7 +56,7 @@ module.exports.run = async (_client, message) => {
    // Add 'Valid' Role on Discord
    const discordRoleValid = (await message.guild.roles.fetch()).find(role => role.name === config.ROLE_VALID_NAME);
    if (!discordRoleValid) {
-      return message.reply({
+      return await message.editReply({
          content: `Role **${config.ROLE_VALID_NAME}** not found on Discord`,
          ephemeral: true,
       });
@@ -81,7 +80,7 @@ module.exports.run = async (_client, message) => {
       try {
          jellyfinUser = await jellyfinAPIService.registerUser(dbUser.username, passwordGenerated)
       } catch (error) {
-         return message.reply({
+         return await message.editReply({
             content: `Error creating account on Jellyfin for user ${user.username}`,
             ephemeral: true,
          });
@@ -90,7 +89,7 @@ module.exports.run = async (_client, message) => {
    else { // If the user exists on Jellyfin
       const ok = await jellyfinAPIService.setAccountActive(jellyfinUser.Id, true)
       if (!ok) {
-         return message.reply({
+         return await message.editReply({
             content: `Error setting account on Jellyfin for user ${user.username}`,
             ephemeral: true,
          });
@@ -111,7 +110,7 @@ module.exports.run = async (_client, message) => {
          .setDescription(`Account enabled <@${dbUser.id_discord_account}>`)
          .setColor(vars.primaryColor)
          .setTimestamp()
-      return message.reply({
+      return await message.editReply({
          embeds: [embed],
       });
    }
@@ -163,6 +162,6 @@ module.exports.run = async (_client, message) => {
       .setTimestamp()
 
    // Send response
-   message.reply({ embeds: [embed] });
+   await message.editReply({ embeds: [embed] });
 
 };

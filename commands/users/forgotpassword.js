@@ -31,7 +31,7 @@ module.exports.run = async (_client, message) => {
       }
    })
    if (!dbUser) {
-      return message.reply({
+      return await message.editReply({
          content: `User **${user.username}** not found in 5KAGE Streamzer database`,
          ephemeral: true,
       });
@@ -42,7 +42,7 @@ module.exports.run = async (_client, message) => {
    try {
       response = await jellyfinAPIService.initiateForgotPasswordProcess(dbUser.username)
    } catch (error) {
-      return message.reply({
+      return await message.editReply({
          content: error.toString(),
          ephemeral: true,
       });
@@ -64,6 +64,6 @@ module.exports.run = async (_client, message) => {
       .setTimestamp()
 
    // Send response
-   message.reply({ embeds: [embed] });
+   await message.editReply({ embeds: [embed] });
 
 };
