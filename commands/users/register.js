@@ -1,0 +1,138 @@
+
+const logger = require('../../utils/logger.js');
+const vars = require('../_general/vars.js');
+const { ApplicationCommandOptionType, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
+const { JellyfinAPIService } = require('../../services/jellyfin.service.js');
+const { GiphyAPIService } = require('../../services/giphy.service.js');
+const generator = require('generate-password');
+const passwordHash = require('password-hash');
+const { userCanBeProcessed } = require('../../events/middleware_commands.js');
+
+module.exports.help = {
+   name: 'register',
+   description: 'Create a new account on Streamzer',
+};
+
+module.exports.run = async (_client, message) => {
+
+   if (!await userCanBeProcessed(message, vars.validRole)) {
+      return false;
+   }
+
+   const user = message.user;
+   logger.info(`🆕 Creating account for ${user.username}`);
+
+   const jellyfinAPIService = new JellyfinAPIService();
+
+   // 2. Fetch existing users to avoid duplicates
+   const jellyfinUsers = await jellyfinAPIService.fetchUsers();
+   let jellyfinUser = jellyfinUsers?.find(u => u.Name.toLowerCase() === user.username.toLowerCase());
+
+   // --- CASE A: User already exists ---
+   if (jellyfinUser) {
+      logger.warn(`User ${user.username} already exists on Jellyfin.`);
+      return await message.editReply({
+         content: `Oups, il semble que tu aies déjà un compte actif sur Streamzer.`,
+         ephemeral: true,
+      });
+   }
+
+   // --- CASE B: Create new account ---
+   const passwordGenerated = generator.generate({ length: 10, numbers: true });
+   // Fetch the discord profile picture and convert it to a buffer
+   const giphyService = new GiphyAPIService();
+   try {
+      const gifObject = await giphyService.fetchRandomGif('brainrot');
+      if (gifObject?.url) {
+         imageUrl = gifObject.images?.downsized_medium?.url;
+      } else {
+         logger.warn(`No GIF found for ${user.username}. Falling back to Discord avatar.`);
+         imageUrl = user.displayAvatarURL({ format: 'png', size: 512 });
+      }
+   } catch (error) {
+      logger.error(`Error fetching GIF from Giphy: ${error.message}`);
+      logger.warn(`Falling back to Discord avatar for ${user.username}.`);
+      imageUrl = user.displayAvatarURL({ format: 'png', size: 512 });
+   }
+
+   const response = await fetch(imageUrl);
+   const arrayBuffer = await response.arrayBuffer();
+   // On crée la string Base64 ici
+   const b64 = Buffer.from(arrayBuffer).toString('base64');
+
+   try {
+      jellyfinUser = await jellyfinAPIService.registerUser(user.username, passwordGenerated);
+      await jellyfinAPIService.initializeAccount(jellyfinUser.Id);
+      await jellyfinAPIService.linkDiscordAccount(jellyfinUser.Id, user.id);
+      await jellyfinAPIService.setUserImage(jellyfinUser.Id, b64);
+   } catch (error) {
+      logger.debug(`Error details: ${error.stack}`);
+      logger.error(`Error creating Jellyfin account for ${user.username}: ${error.message}`);
+      logger.warn(`Rolling back account creation for ${user.username} if it was partially created.`);
+      if (jellyfinUser && jellyfinUser.Id) {
+         await jellyfinAPIService.deleteUser(jellyfinUser.Id);
+      }
+      return await message.editReply({
+         content: `Oups, impossible de créer le compte Jellyfin pour **${user.username}**.`,
+         ephemeral: true,
+      });
+   }
+
+   // 3. Prepare the Welcome DM
+   const changePasswordUrl = `${vars.streamzerServerUrl}/web/#/userprofile?userId=${jellyfinUser.Id}`; // URL pour changer le mot de passe
+   const mpUser = new EmbedBuilder()
+      .setTitle(`🍿 Bienvenue sur Streamzer !`)
+      .setDescription(`Salut ! Ton compte est prêt. Utilise les identifiants ci-dessous pour te connecter sur la plateforme.`)
+      .addFields(
+         { name: '👤 Identifiant', value: `\`${user.username}\``, inline: true },
+         { name: '🔑 Mot de passe', value: `\`${passwordGenerated}\``, inline: true }
+      )
+      .setColor(vars.primaryColor);
+
+   const helpEmbed = new EmbedBuilder()
+      .setDescription(`⚙️ **Sécurité :** Pour changer ton mot de passe, [clique ici pour accéder aux réglages](${changePasswordUrl}).`)
+      .setColor('#2F3136'); // Gris sombre pour un look discret
+
+   // 3. Optionnel : Un bouton "Ouvrir Streamzer" (Le top du top)
+   const row = new ActionRowBuilder().addComponents(
+      new ButtonBuilder()
+         .setLabel('Accéder à Streamzer')
+         .setURL(vars.streamzerServerUrl)
+         .setStyle(ButtonStyle.Link),
+      new ButtonBuilder()
+         .setLabel('Changer mon mot de passe')
+         .setURL(changePasswordUrl)
+         .setStyle(ButtonStyle.Link)
+   );
+
+
+   // 4. Try sending the DM. If it fails, delete the Jellyfin account to stay clean.
+   try {
+      await user.send({
+         embeds: [mpUser, helpEmbed],
+         components: [row]
+      });
+   } catch (dmError) {
+      logger.error(`Failed to send DM to ${user.username}. Rolling back account creation.`);
+
+      // Safety: Ensure jellyfinUser has an ID before trying to delete
+      if (jellyfinUser && jellyfinUser.Id) {
+         await jellyfinAPIService.deleteUser(jellyfinUser.Id);
+      }
+
+      return await message.editReply({
+         content: `Oups, impossible de t'envoyer tes accès en MP. Vérifie tes paramètres de confidentialité et réessaie !`,
+         ephemeral: true,
+      });
+   }
+
+   // 5. Success response in the channel
+   const embedResponse = new EmbedBuilder()
+      .setAuthor({ name: user.username, iconURL: user.displayAvatarURL() })
+      .setDescription(`✅ Le compte de **${user.username}** est maintenant actif !`)
+      .addFields({ name: 'Statut', value: 'Prêt à streamer 🎬', inline: true })
+      .setColor(vars.primaryColor)
+      .setTimestamp();
+
+   await message.editReply({ embeds: [embedResponse], ephemeral: false });
+};

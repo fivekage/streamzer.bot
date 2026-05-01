@@ -3,11 +3,8 @@ const logger = require('./utils/logger.js');
 require('dotenv').config();
 const { loadAllCommands } = require('./utils/load_commands.js');
 const { handleInteraction } = require('./events/handle_interactions.js');
-const { setupChannels } = require('./utils/setup_channels.js');
 const { DISCORD_TOKEN } = process.env;
 const { CLIENT_ID } = process.env;
-const express = require('express')
-const { EXPRESS_PORT } = process.env;
 
 // Check if the token and client id are provided
 if (!DISCORD_TOKEN || !CLIENT_ID) {
@@ -21,7 +18,8 @@ const client = new Client({
       GatewayIntentBits.Guilds,
       GatewayIntentBits.GuildMessages,
       GatewayIntentBits.GuildMessageReactions,
-      GatewayIntentBits.DirectMessageReactions
+      GatewayIntentBits.DirectMessageReactions,
+      GatewayIntentBits.DirectMessages
    ]
 });
 
@@ -44,11 +42,10 @@ rest.put(Routes.applicationCommands(CLIENT_ID), { body: commandsBody })
    .then(() => {
       logger.info('Successfully reloaded application (/) commands.')
 
-      client.on('ready', () => {
+      client.on('clientReady', () => {
          logger.info(`Logged in as ${client.user.tag}!`);
          client.user.setActivity('streamzer.fr', { type: ActivityType.Watching });
          handleInteraction(client, commands)
-         setupChannels(client).then((res) => logger.info(res)).catch((err) => logger.error(err));
       });
 
       // Login to discord, then handle interactions
@@ -58,11 +55,3 @@ rest.put(Routes.applicationCommands(CLIENT_ID), { body: commandsBody })
       logger.fatal(error);
       process.exit(1);
    })
-
-
-// Express API
-const app = express()
-const authCallback = require('./routes/discord/auth-callback')
-app.listen(EXPRESS_PORT ?? new Error('EXPRESS_PORT is not defined'))
-logger.info(`Express API listening on port ${EXPRESS_PORT}`)
-app.use('/discord/auth-callback', authCallback)

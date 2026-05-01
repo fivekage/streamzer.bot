@@ -1,3 +1,6 @@
 module.exports = {
-   primaryColor: '#FFEF03',
+   streamzerServerUrl: 'https://streamzer.fr',
+   primaryColor: '#b803ff',
+   adminRole: 'Admin',
+   validRole: 'Valide',
 };
