@@ -7,7 +7,7 @@ module.exports.help = {
    description: 'Returns a list of available commands',
 };
 
-module.exports.run = (_client, message) => {
+module.exports.run = async (_client, message) => {
    // Load all commands and get their name and description
    const listOfCommands = loadAllCommands().sort((a, b) => {
       if (a.name < b.name) return -1;
@@ -26,5 +26,5 @@ module.exports.run = (_client, message) => {
       .setFooter({ text: 'Need help? Contact samouik', iconURL: vars.reecoom });
 
    // Send the embed
-   return message.reply({ embeds: [helpEmbed] });
+   return await message.editReply({ embeds: [helpEmbed] });
 };

@@ -1,4 +1,4 @@
-name: Docker Build Image
+name: Continuous Integration
 
 on:
   pull_request:
@@ -8,8 +8,14 @@ on:
       - reopened
       - synchronize
     branches:
-      - dev
       - main
+      - dev
+    paths-ignore:
+      - "**/*.md"
+      - "LICENSE"
+      - "docs/**"
+      - ".gitignore"
+      - ".github/**"
 
 permissions:
   contents: read
@@ -17,11 +23,11 @@ permissions:
   security-events: write
 
 jobs:
-  build_docker_image:
+  build-docker-image:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Build Docker image
         run: |
-          docker build -t streamzer.bot .
+          docker build -t muslimbot .
