@@ -33,44 +33,42 @@ jobs:
         id: tags
         run: |
           git fetch --tags --force
-
           CURRENT_TAG=${GITHUB_REF#refs/tags/}
-          echo "Current tag: $CURRENT_TAG"
 
-          PREVIOUS_TAG=$(git tag --sort=-creatordate | grep -A1 "^$CURRENT_TAG$" | tail -n1)
-
-          if [ -z "$PREVIOUS_TAG" ]; then
-            echo "No previous tag found"
-            exit 1
-          fi
-
-          echo "Previous tag: $PREVIOUS_TAG"
+          # Récupère tous les tags triés par date
+          ALL_TAGS=$(git tag --sort=-creatordate)
+          # Trouve le tag précédent
+          PREVIOUS_TAG=$(echo "$ALL_TAGS" | grep -A1 "^$CURRENT_TAG$" | tail -n1)
 
           echo "current=$CURRENT_TAG" >> $GITHUB_OUTPUT
-          echo "previous=$PREVIOUS_TAG" >> $GITHUB_OUTPUT
+
+          if [ "$CURRENT_TAG" = "$PREVIOUS_TAG" ] || [ -z "$PREVIOUS_TAG" ]; then
+            echo "first_tag=true" >> $GITHUB_OUTPUT
+            echo "No previous tag found. This is the first release."
+          else
+            echo "first_tag=false" >> $GITHUB_OUTPUT
+            echo "previous=$PREVIOUS_TAG" >> $GITHUB_OUTPUT
+            echo "Previous tag: $PREVIOUS_TAG"
+          fi
 
       - name: Compare package.json between tags
+        # On n'exécute cette vérification que s'il y a un tag précédent
+        if: steps.tags.outputs.first_tag == 'false'
         run: |
           git show ${{ steps.tags.outputs.previous }}:package.json | jq -r '.version' > old_version.txt
           git show ${{ steps.tags.outputs.current }}:package.json | jq -r '.version' > new_version.txt
-
           if diff -q old_version.txt new_version.txt > /dev/null; then
             echo "Error: Version did not change between tags"
             exit 1
-          else
-            echo "Version changed correctly."
           fi
 
       - name: Check changelog diff between tags
+        # Idem ici
+        if: steps.tags.outputs.first_tag == 'false'
         run: |
-          if git diff --exit-code \
-            ${{ steps.tags.outputs.previous }} \
-            ${{ steps.tags.outputs.current }} \
-            -- changelog.md; then
-            echo "Error: changelog.md not updated between tags"
+          if git diff --exit-code ${{ steps.tags.outputs.previous }} ${{ steps.tags.outputs.current }} -- changelog.md; then
+            echo "Error: changelog.md not updated"
             exit 1
-          else
-            echo "changelog.md updated."
           fi
 
   create-release:
