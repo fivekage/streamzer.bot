@@ -7,16 +7,7 @@ const { userCanBeProcessed } = require('../../events/middleware_commands.js');
 
 module.exports.help = {
    name: 'me',
-   description: 'Get your Streamzer account information',
-   options: [
-      {
-         name: 'public',
-         description: 'Whether to show the information publicly',
-         type: ApplicationCommandOptionType.Boolean,
-         required: false,
-         defaultValue: false
-      },
-   ],
+   description: 'Affiche les informations de ton compte Streamzer',
 };
 
 module.exports.run = async (_client, message) => {
@@ -24,7 +15,6 @@ module.exports.run = async (_client, message) => {
       return false;
    }
 
-   const showPublicly = message.options.getBoolean('public') || false;
    const user = message.user;
    logger.info(`Information requested for ${user.username} (${user.id})`);
 
@@ -35,8 +25,8 @@ module.exports.run = async (_client, message) => {
       // 1. On récupère TOUS les users
       const allUsers = await jellyfinAPIService.fetchUsers();
 
-      // 2. On cherche celui qui a l'ID Discord dans ses AllowedTags
-      jellyfinUser = allUsers.find(u => u.Policy?.AllowedTags?.includes(user.id));
+      // 2. On cherche celui qui a l'ID Discord dans ses BlockedTags
+      jellyfinUser = allUsers.find(u => u.Policy?.BlockedTags?.includes(user.id));
    } catch (error) {
       logger.warn(`Error fetching Jellyfin user for ${user.username}: ${error.message}`);
    }
@@ -53,7 +43,6 @@ module.exports.run = async (_client, message) => {
 
    // 3. Construction de l'embed avec les infos essentielles
    const accountStatus = !jellyfinUser.Policy?.IsDisabled ? '🟢 Actif' : '🔴 Désactivé';
-   const isLinked = jellyfinUser.Policy?.AllowedTags?.includes(user.id) ? '✅ Lié via Discord ID' : '❌ Non lié';
    const jellyfinUserImageUrl = `${vars.streamzerServerUrl}/Users/${jellyfinUser.Id}/Images/Primary?tag=${jellyfinUser.PrimaryImageTag}`;
    const embed = new EmbedBuilder()
       .setTitle('🎬 Ton Compte Streamzer')
@@ -62,7 +51,7 @@ module.exports.run = async (_client, message) => {
       .addFields(
          {
             name: '👤 Identité',
-            value: `**Nom d'utilisateur:** \`${jellyfinUser.Name}\`\n**Liaison:** \`${isLinked}\``,
+            value: `**Nom d'utilisateur:** \`${jellyfinUser.Name}\`\n**Liaison:** \`'✅ Lié via Discord ID'`,
             inline: false
          },
          {

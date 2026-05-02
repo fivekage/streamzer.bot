@@ -96,7 +96,7 @@ module.exports.JellyfinAPIService = class JellyfinAPIService {
       const response = await fetch(`${this.API_URL}/UserImage?${params}`, {
          method: 'POST',
          headers: {
-            'Content-Type': 'image/png',
+            'Content-Type': 'image/gif',
             ...this.API_KEY_HEADER
          },
          body: base64Data,
@@ -160,15 +160,15 @@ module.exports.JellyfinAPIService = class JellyfinAPIService {
    }
 
    /**
-    * Function to link a discord account to a jellyfin account by setting the discord ID in AllowedTags
+    * Function to link a discord account to a jellyfin account by setting the discord ID in BlockedTags
     * @param {string} userId
     * @param {string} discordId
     * @returns boolean
     * */
    async linkDiscordAccount(userId, discordId, currentPolicy = {}) {
-      currentPolicy.AllowedTags = currentPolicy.AllowedTags || [];
-      if (!currentPolicy.AllowedTags.includes(discordId)) {
-         currentPolicy.AllowedTags.push(discordId);
+      currentPolicy.BlockedTags = currentPolicy.BlockedTags || [];
+      if (!currentPolicy.BlockedTags.includes(discordId)) {
+         currentPolicy.BlockedTags.push(discordId);
       }
       const response = await fetch(`${this.API_URL}/Users/${userId}/Policy`, {
          method: 'POST',

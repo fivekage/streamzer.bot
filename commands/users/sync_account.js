@@ -7,7 +7,7 @@ const { userCanBeProcessed } = require('../../events/middleware_commands.js');
 
 module.exports.help = {
    name: 'sync_account',
-   description: 'Update your Streamzer account ID to match your Discord ID',
+   description: 'Lier votre compte Discord à un compte Streamzer existant',
    options: [
       {
          name: 'username',
@@ -32,7 +32,7 @@ module.exports.run = async (_client, message) => {
    const allUsers = await jellyfinAPIService.fetchUsers();
 
    // 2. Vérifier si l'ID Discord est déjà lié à UN compte
-   const alreadyLinked = allUsers.find(u => u.Policy?.AllowedTags?.includes(user.id));
+   const alreadyLinked = allUsers.find(u => u.Policy?.BlockedTags?.includes(user.id));
    if (alreadyLinked) {
       return await message.editReply({
          content: `Oups, ton compte Discord est déjà lié au compte Streamzer **${alreadyLinked.Name}**.`,
@@ -49,10 +49,10 @@ module.exports.run = async (_client, message) => {
       });
    }
 
-   // 4. Mettre à jour les AllowedTags pour inclure l'ID Discord
+   // 4. Mettre à jour les BlockedTags pour inclure l'ID Discord
    try {
       const currentPolicy = targetUser.Policy;
-      const updatedTags = currentPolicy.AllowedTags || [];
+      const updatedTags = currentPolicy.BlockedTags || [];
 
       if (!updatedTags.includes(user.id)) {
          updatedTags.push(user.id);
