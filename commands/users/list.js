@@ -21,7 +21,7 @@ module.exports.run = async (_client, message) => {
    // --- Vérification Admin ---
    if (!message.member.roles.cache.some(role => role.name === vars.adminRole)) {
       return await message.editReply({
-         content: '⛔ Accès refusé : Vous devez être administrateur.',
+         content: `⛔ Accès refusé : Vous devez posséder le rôle **${vars.adminRole}** pour utiliser cette commande.`,
          ephemeral: true
       });
    }

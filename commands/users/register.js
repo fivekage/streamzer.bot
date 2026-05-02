@@ -10,7 +10,7 @@ const { userCanBeProcessed } = require('../../events/middleware_commands.js');
 
 module.exports.help = {
    name: 'register',
-   description: 'Create a new account on Streamzer',
+   description: 'Créer un compte sur la plateforme Streamzer',
 };
 
 module.exports.run = async (_client, message) => {

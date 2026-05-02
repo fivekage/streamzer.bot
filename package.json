@@ -1,6 +1,6 @@
 {
   "name": "streamzer.bot",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Streamzer - Discord Bot for users management",
   "main": "index.js",
   "scripts": {
