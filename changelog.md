@@ -23,3 +23,11 @@
 - removed "public" option from "me" command
 - changed the way the discord id is stored in the jellyfin account, now it's stored in the BlockedTags instead of the AllowedTags bc AllowedTags is used to filter medias the user can see.
 - added more logs in the random_pic command to help debugging and see the fetched gif url.
+
+---
+
+## [1.0.2] - 2026-05-08
+
+### Changed
+
+- fixed `me` command (var undefined lol)
