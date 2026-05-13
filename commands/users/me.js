@@ -73,5 +73,5 @@ module.exports.run = async (_client, message) => {
       })
       .setTimestamp();
 
-   return await message.editReply({ embeds: [embed], ephemeral: !showPublicly });
+   return await message.editReply({ embeds: [embed], ephemeral: false });
 };
