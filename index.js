@@ -1,4 +1,4 @@
-const { REST, Routes, ActivityType, Client, GatewayIntentBits } = require('discord.js');
+const { REST, Routes, ActivityType, Client, GatewayIntentBits, Events } = require('discord.js');
 const logger = require('./utils/logger.js');
 require('dotenv').config();
 const { loadAllCommands } = require('./utils/load_commands.js');
@@ -17,6 +17,7 @@ const client = new Client({
    intents: [
       GatewayIntentBits.Guilds,
       GatewayIntentBits.GuildMessages,
+      GatewayIntentBits.GuildMembers,
       GatewayIntentBits.GuildMessageReactions,
       GatewayIntentBits.DirectMessageReactions,
       GatewayIntentBits.DirectMessages
@@ -42,16 +43,16 @@ rest.put(Routes.applicationCommands(CLIENT_ID), { body: commandsBody })
    .then(() => {
       logger.info('Successfully reloaded application (/) commands.')
 
-      client.on('clientReady', () => {
+      client.on(Events.ClientReady, () => {
          logger.info(`Logged in as ${client.user.tag}!`);
-         client.user.setActivity('streamzer.fr', { type: ActivityType.Watching });
+         client.user.setActivity('https://streamzer.fr', { type: ActivityType.Watching });
          handleInteraction(client, commands)
       });
-
-      // Login to discord, then handle interactions
-      client.login(DISCORD_TOKEN).catch((err) => logger.error(err));
    })
    .catch(error => {
       logger.fatal(error);
       process.exit(1);
    })
+
+// Login to discord, then handle interactions
+client.login(DISCORD_TOKEN).catch((err) => logger.error(err));
