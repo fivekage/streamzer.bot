@@ -9,6 +9,7 @@ module.exports = {
             const commandsFileName = readdirSync(`${directory}/${dir}`).filter((files) => files.endsWith('.js'));
 
             for (const file of commandsFileName) {
+               console.log(`Fichier trouvé : ${file}`); // Ajoute ça
                const getFileName = require(`../${directory}/${dir}/${file}`);
                const { name } = getFileName.help;
                commands.push({
