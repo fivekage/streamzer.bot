@@ -3,12 +3,12 @@ const logger = require('./utils/logger.js');
 require('dotenv').config();
 const { loadAllCommands } = require('./utils/load_commands.js');
 const { handleInteraction } = require('./events/handle_interactions.js');
-const { DISCORD_TOKEN } = process.env;
-const { CLIENT_ID } = process.env;
+const { DISCORD_TOKEN, CLIENT_ID, GUILD_ID } = process.env;
+const { } = process.env;
 
 // Check if the token and client id are provided
-if (!DISCORD_TOKEN || !CLIENT_ID) {
-   logger.error('Please provide a valid token and client id');
+if (!DISCORD_TOKEN || !CLIENT_ID || !GUILD_ID) {
+   logger.error('Please provide a valid token, client id, and guild id');
    process.exit(1);
 }
 
@@ -39,7 +39,7 @@ const commandsBody = commands.map((command) => ({
    choices: command.choices,
 }));
 
-rest.put(Routes.applicationCommands(CLIENT_ID), { body: commandsBody })
+rest.put(Routes.applicationGuildCommands(CLIENT_ID, GUILD_ID), { body: commandsBody })
    .then(() => {
       logger.info('Successfully reloaded application (/) commands.')
 
