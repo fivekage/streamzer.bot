@@ -31,3 +31,11 @@
 ### Changed
 
 - fixed `me` command (var undefined lol)
+
+---
+
+## [1.0.3] - 2026-05-14
+
+### Added
+
+- added a GUILD_ID variable in the .env file to specify the guild where the commands will be registered, this way we can test the commands without having to wait for them to be registered globally (which can take up to an hour) and also avoid having the commands registered in other guilds where the bot is present but not used.
