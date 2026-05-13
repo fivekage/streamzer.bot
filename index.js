@@ -4,7 +4,6 @@ require('dotenv').config();
 const { loadAllCommands } = require('./utils/load_commands.js');
 const { handleInteraction } = require('./events/handle_interactions.js');
 const { DISCORD_TOKEN, CLIENT_ID, GUILD_ID } = process.env;
-const { } = process.env;
 
 // Check if the token and client id are provided
 if (!DISCORD_TOKEN || !CLIENT_ID || !GUILD_ID) {
