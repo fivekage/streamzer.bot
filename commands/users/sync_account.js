@@ -20,7 +20,10 @@ module.exports.help = {
 module.exports.run = async (_client, message) => {
 
    if (!await userCanBeProcessed(message, vars.validRole)) {
-      return false;
+      return await message.editReply({
+         content: `⛔ Accès refusé : Vous devez posséder le rôle **${vars.validRole}** pour utiliser cette commande.`,
+         ephemeral: true
+      });
    }
    const user = message.user;
    const accountName = message.options.getString('username');

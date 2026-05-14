@@ -1,5 +1,5 @@
 const logger = require("../utils/logger");
-
+const { GUILD_ID } = process.env;
 /**
  * Middleware to check if the command can be processed
  * @param {*} message 
@@ -11,7 +11,7 @@ module.exports.commandCanBeProcessed = async (message) => {
    await message.deferReply({ ephemeral: !showPublicly });
 
    // Check if the user run command from Streamzer server
-   if (!message.inGuild()) { // The bot is present in only one server -> No need to check if it's the right server
+   if (!message.inGuild() || message.guild.id !== GUILD_ID) { // The bot must be present in only one server -> check the guild id
       await message.editReply({
          content: 'You can only run this command from Streamzer Discord server',
          ephemeral: true,
