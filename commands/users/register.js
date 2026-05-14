@@ -16,21 +16,25 @@ module.exports.help = {
 module.exports.run = async (_client, message) => {
 
    if (!await userCanBeProcessed(message, vars.validRole)) {
-      return false;
+      return await message.editReply({
+         content: `⛔ Accès refusé : Vous devez posséder le rôle **${vars.validRole}** pour utiliser cette commande.`,
+         ephemeral: true
+      });
    }
 
    const user = message.user;
-   logger.info(`🆕 Creating account for ${user.username}`);
+   const username = user.username;
+   logger.info(`🆕 Creating account for ${username}`);
 
    const jellyfinAPIService = new JellyfinAPIService();
 
    // 2. Fetch existing users to avoid duplicates
    const jellyfinUsers = await jellyfinAPIService.fetchUsers();
-   let jellyfinUser = jellyfinUsers?.find(u => u.Name.toLowerCase() === user.username.toLowerCase());
+   let jellyfinUser = jellyfinUsers?.find(u => u.Name.toLowerCase() === username.toLowerCase());
 
    // --- CASE A: User already exists ---
    if (jellyfinUser) {
-      logger.warn(`User ${user.username} already exists on Jellyfin.`);
+      logger.warn(`User ${username} already exists on Jellyfin.`);
       return await message.editReply({
          content: `Oups, il semble que tu aies déjà un compte actif sur Streamzer.`,
          ephemeral: true,
@@ -46,13 +50,13 @@ module.exports.run = async (_client, message) => {
       if (gifObject?.url) {
          imageUrl = gifObject.images?.downsized_medium?.url;
       } else {
-         logger.warn(`No GIF found for ${user.username}. Falling back to Discord avatar.`);
-         imageUrl = user.displayAvatarURL({ format: 'png', size: 512 });
+         throw new Error('No GIF found.' + JSON.stringify(gifObject));
       }
    } catch (error) {
       logger.error(`Error fetching GIF from Giphy: ${error.message}`);
-      logger.warn(`Falling back to Discord avatar for ${user.username}.`);
+   } finally {
       imageUrl = user.displayAvatarURL({ format: 'png', size: 512 });
+      logger.info(`Using image URL for ${username}: ${imageUrl}`);
    }
 
    const response = await fetch(imageUrl);
@@ -61,19 +65,19 @@ module.exports.run = async (_client, message) => {
    const b64 = Buffer.from(arrayBuffer).toString('base64');
 
    try {
-      jellyfinUser = await jellyfinAPIService.registerUser(user.username, passwordGenerated);
+      jellyfinUser = await jellyfinAPIService.registerUser(username, passwordGenerated);
       await jellyfinAPIService.initializeAccount(jellyfinUser.Id);
-      await jellyfinAPIService.linkDiscordAccount(jellyfinUser.Id, user.id);
+      await jellyfinAPIService.linkDiscordAccount(jellyfinUser.Id, user.id, jellyfinUser.Policy);
       await jellyfinAPIService.setUserImage(jellyfinUser.Id, b64);
    } catch (error) {
       logger.debug(`Error details: ${error.stack}`);
-      logger.error(`Error creating Jellyfin account for ${user.username}: ${error.message}`);
-      logger.warn(`Rolling back account creation for ${user.username} if it was partially created.`);
+      logger.error(`Error creating Jellyfin account for ${username}: ${error.message}`);
+      logger.warn(`Rolling back account creation for ${username} if it was partially created.`);
       if (jellyfinUser && jellyfinUser.Id) {
          await jellyfinAPIService.deleteUser(jellyfinUser.Id);
       }
       return await message.editReply({
-         content: `Oups, impossible de créer le compte Jellyfin pour **${user.username}**.`,
+         content: `Oups, impossible de créer le compte Jellyfin pour **${username}**.`,
          ephemeral: true,
       });
    }
@@ -84,7 +88,7 @@ module.exports.run = async (_client, message) => {
       .setTitle(`🍿 Bienvenue sur Streamzer !`)
       .setDescription(`Salut ! Ton compte est prêt. Utilise les identifiants ci-dessous pour te connecter sur la plateforme.`)
       .addFields(
-         { name: '👤 Identifiant', value: `\`${user.username}\``, inline: true },
+         { name: '👤 Identifiant', value: `\`${username}\``, inline: true },
          { name: '🔑 Mot de passe', value: `\`${passwordGenerated}\``, inline: true }
       )
       .setColor(vars.primaryColor);
@@ -113,7 +117,7 @@ module.exports.run = async (_client, message) => {
          components: [row]
       });
    } catch (dmError) {
-      logger.error(`Failed to send DM to ${user.username}. Rolling back account creation.`);
+      logger.error(`Failed to send DM to ${username}. Rolling back account creation.`);
 
       // Safety: Ensure jellyfinUser has an ID before trying to delete
       if (jellyfinUser && jellyfinUser.Id) {
@@ -128,8 +132,8 @@ module.exports.run = async (_client, message) => {
 
    // 5. Success response in the channel
    const embedResponse = new EmbedBuilder()
-      .setAuthor({ name: user.username, iconURL: user.displayAvatarURL() })
-      .setDescription(`✅ Le compte de **${user.username}** est maintenant actif !`)
+      .setAuthor({ name: username, iconURL: user.displayAvatarURL() })
+      .setDescription(`✅ Le compte de **${username}** est maintenant actif !`)
       .addFields({ name: 'Statut', value: 'Prêt à streamer 🎬', inline: true })
       .setColor(vars.primaryColor)
       .setTimestamp();

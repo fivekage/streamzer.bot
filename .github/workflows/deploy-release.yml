@@ -90,38 +90,33 @@ jobs:
       - name: Extract changelog for the current version
         id: get_changelog
         run: |
-          # Read the version from the output of a previous step (for example, from package.json)
-          echo "VERSION=$VERSION"
+          # 1. Trouver la ligne du DERNIER séparateur ---
+          LAST_SEPARATOR_LINE=$(grep -n "^---" changelog.md | tail -n 1 | cut -d':' -f1)
 
-
-          # Find the line where the version starts
-          START_LINE=$(grep -n "^## \\[$VERSION\\]" changelog.md | cut -d':' -f1)
-          if [ -z "$START_LINE" ]; then
-            echo "No changelog entry found for version $VERSION" && exit 1
+          if [ -z "$LAST_SEPARATOR_LINE" ]; then
+            # Si pas de séparateur, on cherche peut-être le dernier titre de version
+            LAST_SEPARATOR_LINE=$(grep -n "^## \[" changelog.md | tail -n 1 | cut -d':' -f1)
           fi
-          echo "START_LINE=$START_LINE"
 
-          # Find the line where the next version starts or the end of the file
-          END_LINE=$(grep -n -m 1 "^## \\[" changelog.md | awk -F':' -v start="$START_LINE" '$1 > start {print $1}' | head -n 1)
-          if [ -z "$END_LINE" ]; then
-            END_LINE=$(wc -l < changelog.md) # Default to the last line of the file
+          if [ -z "$LAST_SEPARATOR_LINE" ]; then
+            echo "Impossible de trouver un point de départ dans changelog.md" && exit 1
           fi
-          echo "END_LINE=$END_LINE"
 
-          # Extract the changelog content
-          if [ "$START_LINE" -lt "$END_LINE" ]; then
-            changelog=$(sed -n "${START_LINE},$((END_LINE - 1))p" changelog.md | sed '1d')
-          else
-            changelog=""
-          fi
+          echo "Extraction à partir de la ligne: $LAST_SEPARATOR_LINE"
+
+          # 2. Extraire tout ce qui est APRES cette ligne jusqu'à la fin du fichier
+          # On utilise tail pour prendre tout ce qui suit la ligne du séparateur
+          changelog=$(tail -n +$((LAST_SEPARATOR_LINE + 1)) changelog.md)
+
+          # 3. Nettoyer les espaces/lignes vides au début et à la fin
+          changelog=$(echo "$changelog" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
 
           if [ -z "$changelog" ]; then
-            echo "Failed to extract changelog content for version $VERSION or content is empty" && exit 1
+            echo "Le contenu extrait est vide !" && exit 1
           fi
 
-          # Output the changelog
-          echo "Changelog content:"
-          echo "$changelog"
+          # 4. Export vers GitHub Output
+          echo "Changelog content found."
           echo "changelog<<EOF" >> $GITHUB_OUTPUT
           echo "$changelog" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT

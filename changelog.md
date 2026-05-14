@@ -39,3 +39,12 @@
 ### Added
 
 - added a GUILD_ID variable in the .env file to specify the guild where the commands will be registered, this way we can test the commands without having to wait for them to be registered globally (which can take up to an hour) and also avoid having the commands registered in other guilds where the bot is present but not used.
+
+---
+
+## [1.0.4] - 2026-05-14
+
+### Changed
+
+- Fixed /register command (bug when the sync between the new jellyfin account and the discord account begins)
+- Fixed the error handle when the user doesn't have the "Valide" role and try to use a command, now it will show an error message instead of just doing nothing.
