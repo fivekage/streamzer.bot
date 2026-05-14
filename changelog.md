@@ -48,3 +48,11 @@
 
 - Fixed /register command (bug when the sync between the new jellyfin account and the discord account begins)
 - Fixed the error handle when the user doesn't have the "Valide" role and try to use a command, now it will show an error message instead of just doing nothing.
+
+---
+
+## [1.0.5] - 2026-05-14
+
+### Changed
+
+- giphy image fetch in /register command
