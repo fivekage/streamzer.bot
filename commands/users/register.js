@@ -54,8 +54,8 @@ module.exports.run = async (_client, message) => {
       }
    } catch (error) {
       logger.error(`Error fetching GIF from Giphy: ${error.message}`);
-   } finally {
       imageUrl = user.displayAvatarURL({ format: 'png', size: 512 });
+   } finally {
       logger.info(`Using image URL for ${username}: ${imageUrl}`);
    }
 
