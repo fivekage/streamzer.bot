@@ -56,3 +56,11 @@
 ### Changed
 
 - giphy image fetch in /register command
+
+---
+
+## [1.0.6] - 2026-10-20
+
+### Changed
+
+- fixed header "X-Emby-Token" -> "Authorization" in the jellyfin api requests
