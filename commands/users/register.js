@@ -29,7 +29,16 @@ module.exports.run = async (_client, message) => {
    const jellyfinAPIService = new JellyfinAPIService();
 
    // 2. Fetch existing users to avoid duplicates
-   const jellyfinUsers = await jellyfinAPIService.fetchUsers();
+   let jellyfinUsers = [];
+   try {
+      jellyfinUsers = await jellyfinAPIService.fetchUsers();
+   } catch (error) {
+      logger.error(`Error fetching users from Jellyfin: ${error.message}`);
+      return await message.editReply({
+         content: `Oups, impossible de vérifier les comptes existants sur Streamzer. Réessaie plus tard !`,
+         ephemeral: true,
+      });
+   }
    let jellyfinUser = jellyfinUsers?.find(u => u.Name.toLowerCase() === username.toLowerCase());
 
    // --- CASE A: User already exists ---
