@@ -1,6 +1,6 @@
 const logger = require("../utils/logger");
 
-const API_KEY_JELLYFIN = "a5537277000d4d17bd32de949cdd4cc9"
+const API_KEY_JELLYFIN = process.env.API_KEY_JELLYFIN;
 
 
 module.exports.JellyfinAPIService = class JellyfinAPIService {
