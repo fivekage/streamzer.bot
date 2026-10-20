@@ -1,6 +1,6 @@
 const logger = require("../utils/logger");
 
-const API_KEY_JELLYFIN = process.env.API_KEY_JELLYFIN
+const API_KEY_JELLYFIN = "a5537277000d4d17bd32de949cdd4cc9"
 
 
 module.exports.JellyfinAPIService = class JellyfinAPIService {
@@ -8,7 +8,7 @@ module.exports.JellyfinAPIService = class JellyfinAPIService {
       if (!API_KEY_JELLYFIN)
          throw new Error('API_KEY_JELLYFIN is not defined');
       this.API_URL = 'http://streamzer.fr';
-      this.API_KEY_HEADER = { 'Authorization': API_KEY_JELLYFIN };
+      this.API_KEY_QUERY = `ApiKey=${API_KEY_JELLYFIN}`;
       this.DEFAULT_PROVIDERS_CONFIG = {
          "AuthenticationProviderId": "Jellyfin.Server.Implementations.Users.DefaultAuthenticationProvider",
          "PasswordResetProviderId": "Jellyfin.Server.Implementations.Users.Default"
@@ -21,11 +21,10 @@ module.exports.JellyfinAPIService = class JellyfinAPIService {
     * @returns response data
     */
    async fetchUsers() {
-      const response = await fetch(`${this.API_URL}/Users`, {
+      const response = await fetch(`${this.API_URL}/Users?${this.API_KEY_QUERY}`, {
          method: 'GET',
          headers: {
             'Content-Type': 'application/json',
-            ...this.API_KEY_HEADER
          },
       });
       if (!response.ok) {
@@ -41,11 +40,10 @@ module.exports.JellyfinAPIService = class JellyfinAPIService {
     * @returns response data
     */
    async fetchUser(userId) {
-      const response = await fetch(`${this.API_URL}/Users/${userId}`, {
+      const response = await fetch(`${this.API_URL}/Users/${userId}?${this.API_KEY_QUERY}`, {
          method: 'GET',
          headers: {
-            'Content-Type': 'application/json',
-            ...this.API_KEY_HEADER
+            'Content-Type': 'application/json'
          },
       });
       if (!response.ok) {
@@ -65,11 +63,10 @@ module.exports.JellyfinAPIService = class JellyfinAPIService {
     * @returns response data
     */
    async registerUser(username, pwd) {
-      const response = await fetch(`${this.API_URL}/Users/New`, {
+      const response = await fetch(`${this.API_URL}/Users/New?${this.API_KEY_QUERY}`, {
          method: 'POST',
          headers: {
             'Content-Type': 'application/json',
-            ...this.API_KEY_HEADER
          },
          body: JSON.stringify({
             Name: username,
@@ -93,11 +90,10 @@ module.exports.JellyfinAPIService = class JellyfinAPIService {
       const params = new URLSearchParams();
       params.append("userId", userId);
       params.append("type", "Primary");
-      const response = await fetch(`${this.API_URL}/UserImage?${params}`, {
+      const response = await fetch(`${this.API_URL}/UserImage?${params}?${this.API_KEY_QUERY}`, {
          method: 'POST',
          headers: {
             'Content-Type': 'image/gif',
-            ...this.API_KEY_HEADER
          },
          body: base64Data,
       });
@@ -116,11 +112,10 @@ module.exports.JellyfinAPIService = class JellyfinAPIService {
     * @returns boolean 
     */
    async deleteUser(userId) {
-      const response = await fetch(`${this.API_URL}/Users/${userId}`, {
+      const response = await fetch(`${this.API_URL}/Users/${userId}?${this.API_KEY_QUERY}`, {
          method: 'DELETE',
          headers: {
             'Content-Type': 'application/json',
-            ...this.API_KEY_HEADER
          }
       });
 
@@ -137,11 +132,10 @@ module.exports.JellyfinAPIService = class JellyfinAPIService {
     * @returns boolean
     */
    async initializeAccount(userId) {
-      const response = await fetch(`${this.API_URL}/Users/${userId}/Policy`, {
+      const response = await fetch(`${this.API_URL}/Users/${userId}/Policy?${this.API_KEY_QUERY}`, {
          method: 'POST',
          headers: {
             'Content-Type': 'application/json',
-            ...this.API_KEY_HEADER
          },
          body: JSON.stringify({
             "EnableAllFolders": true,
@@ -170,11 +164,10 @@ module.exports.JellyfinAPIService = class JellyfinAPIService {
       if (!currentPolicy.BlockedTags.includes(discordId)) {
          currentPolicy.BlockedTags.push(discordId);
       }
-      const response = await fetch(`${this.API_URL}/Users/${userId}/Policy`, {
+      const response = await fetch(`${this.API_URL}/Users/${userId}/Policy?${this.API_KEY_QUERY}`, {
          method: 'POST',
          headers: {
             'Content-Type': 'application/json',
-            ...this.API_KEY_HEADER
          },
          body: JSON.stringify(currentPolicy)
       });
@@ -191,11 +184,10 @@ module.exports.JellyfinAPIService = class JellyfinAPIService {
     * @returns 
     */
    async setUserAsAdmin(userId, isAdmin) {
-      const response = await fetch(`${this.API_URL}/Users/${userId}/Policy`, {
+      const response = await fetch(`${this.API_URL}/Users/${userId}/Policy?${this.API_KEY_QUERY}`, {
          method: 'POST',
          headers: {
             'Content-Type': 'application/json',
-            ...this.API_KEY_HEADER
          },
          body: JSON.stringify({
             IsAdministrator: isAdmin,
@@ -218,11 +210,10 @@ module.exports.JellyfinAPIService = class JellyfinAPIService {
     * @returns 
     */
    async setAccountActive(userId, enable) {
-      const response = await fetch(`${this.API_URL}/Users/${userId}/Policy`, {
+      const response = await fetch(`${this.API_URL}/Users/${userId}/Policy?${this.API_KEY_QUERY}`, {
          method: 'POST',
          headers: {
             'Content-Type': 'application/json',
-            ...this.API_KEY_HEADER
          },
          body: JSON.stringify({
             IsDisabled: !enable,
@@ -244,11 +235,10 @@ module.exports.JellyfinAPIService = class JellyfinAPIService {
     * @returns json response
     */
    async initiateForgotPasswordProcess(username) {
-      const response = await fetch(`${this.API_URL}/Users/ForgotPassword`, {
+      const response = await fetch(`${this.API_URL}/Users/ForgotPassword?${this.API_KEY_QUERY}`, {
          method: 'POST',
          headers: {
-            'Content-Type': 'application/json',
-            ...this.API_KEY_HEADER
+            'Content-Type': 'application/json'
          },
          body: JSON.stringify({
             EnteredUsername: username
