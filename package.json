@@ -1,6 +1,6 @@
 {
   "name": "streamzer.bot",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "Streamzer - Discord Bot for users management",
   "main": "index.js",
   "scripts": {
@@ -11,8 +11,8 @@
   "author": "Samy MOKHTARI",
   "license": "ISC",
   "dependencies": {
-    "discord.js": "^14.26.4",
-    "dotenv": "^17.4.2",
+    "discord.js": "^14.27.0",
+    "dotenv": "^18.0.8",
     "generate-password": "^1.7.1",
     "log4js": "^6.9.1",
     "password-hash": "^1.2.2"
