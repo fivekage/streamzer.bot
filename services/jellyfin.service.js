@@ -90,7 +90,7 @@ module.exports.JellyfinAPIService = class JellyfinAPIService {
       const params = new URLSearchParams();
       params.append("userId", userId);
       params.append("type", "Primary");
-      const response = await fetch(`${this.API_URL}/UserImage?${params}?${this.API_KEY_QUERY}`, {
+      const response = await fetch(`${this.API_URL}/UserImage?${params}&${this.API_KEY_QUERY}`, {
          method: 'POST',
          headers: {
             'Content-Type': 'image/gif',
