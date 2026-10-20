@@ -8,7 +8,7 @@ module.exports.JellyfinAPIService = class JellyfinAPIService {
       if (!API_KEY_JELLYFIN)
          throw new Error('API_KEY_JELLYFIN is not defined');
       this.API_URL = 'http://streamzer.fr';
-      this.API_KEY_HEADER = { 'X-Emby-Token': API_KEY_JELLYFIN };
+      this.API_KEY_HEADER = { 'Authorization': API_KEY_JELLYFIN };
       this.DEFAULT_PROVIDERS_CONFIG = {
          "AuthenticationProviderId": "Jellyfin.Server.Implementations.Users.DefaultAuthenticationProvider",
          "PasswordResetProviderId": "Jellyfin.Server.Implementations.Users.Default"
